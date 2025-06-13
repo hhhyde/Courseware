@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机钟面</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            flex-wrap: wrap;
+        }
+        canvas {
+            background: white;
+            border-radius: 50%;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function getRandomTime() {
+            return {
+                hour: Math.floor(Math.random() * 12), // 0~11
+                minute: Math.floor(Math.random() * 60) // 0~59
+            };
+        }
+
+        function drawClock(ctx, hour, minute) {
+            const radius = 100;
+            ctx.clearRect(0, 0, 2 * radius, 2 * radius);
+            
+            ctx.translate(radius, radius);
+            ctx.lineWidth = 2;
+            
+            // 画钟面外圆
+            ctx.beginPath();
+            ctx.arc(0, 0, radius - 2, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 画刻度
+            for (let i = 0; i < 60; i++) {
+                let angle = (i * 6) * Math.PI / 180;
+                let inner = i % 5 === 0 ? 80 : 90; // 整点刻度短，小刻度长
+                ctx.beginPath();
+                ctx.moveTo(inner * Math.cos(angle), inner * Math.sin(angle));
+                ctx.lineTo(98 * Math.cos(angle), 98 * Math.sin(angle));
+                ctx.stroke();
+            }
+
+            // 计算时针和分针角度
+            let hourAngle = ((hour % 12) * 30 + minute / 2) * Math.PI / 180;
+            let minuteAngle = (minute * 6) * Math.PI / 180;
+
+            // 画时针
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(50 * Math.cos(hourAngle - Math.PI / 2), 50 * Math.sin(hourAngle - Math.PI / 2));
+            ctx.stroke();
+
+            // 画分针
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(70 * Math.cos(minuteAngle - Math.PI / 2), 70 * Math.sin(minuteAngle - Math.PI / 2));
+            ctx.stroke();
+
+            // 画中心点
+            ctx.beginPath();
+            ctx.arc(0, 0, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // 复位变换
+        }
+
+        // 创建 5 个随机钟面
+        for (let i = 0; i < 5; i++) {
+            let { hour, minute } = getRandomTime(); // 获取随机时间
+            let canvas = document.createElement("canvas");
+            canvas.width = 200;
+            canvas.height = 200;
+            document.body.appendChild(canvas);
+            let ctx = canvas.getContext("2d");
+            drawClock(ctx, hour, minute);
+        }
+    </script>
+</body>
+</html>
