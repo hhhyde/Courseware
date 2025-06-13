@@ -3,50 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>页面列表</title>
-  <style>
-    body { font-family: sans-serif; padding: 2em; background: #f9f9f9; }
-    h1 { color: #333; }
-    ul { list-style: none; padding: 0; }
-    li { margin: 0.5em 0; }
-    a { color: #007acc; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
 </head>
 <body>
   <h1>📄 页面目录 /page/</h1>
-  <ul id="file-list">加载中...</ul>
-
-  <script>
-    const fileList = document.getElementById('file-list');
-    fileList.innerHTML = '';
-
-    fetch('./page/')
-      .then(response => response.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const links = Array.from(doc.querySelectorAll('a'));
-
-        const htmlFiles = links
-          .map(link => link.getAttribute('href'))
-          .filter(href => href.endsWith('.html'));
-
-        if (htmlFiles.length === 0) {
-          fileList.innerHTML = '<li>未找到 HTML 文件。</li>';
-        } else {
-          htmlFiles.forEach(file => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = './page/' + file;
-            a.textContent = file;
-            li.appendChild(a);
-            fileList.appendChild(li);
-          });
-        }
-      })
-      .catch(error => {
-        fileList.innerHTML = '<li>❌ 加载失败：' + error + '</li>';
-      });
-  </script>
+  <ul>
+    <li><a href="./page/钟面.html">随机钟面</a></li>
+  </ul>
 </body>
 </html>
