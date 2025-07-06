@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>汉字笔画动态田字格</title>
+  <meta charset="UTF-8" />
+  <title>多汉字逐个笔画动画米字格</title>
   <style>
     #gridContainer {
       display: flex;
@@ -14,38 +14,62 @@
       height: 150px;
       border: 2px solid #000;
       position: relative;
+      background-image:
+        linear-gradient(to right, transparent 50%, black 50%, transparent 50.5%),
+        linear-gradient(to bottom, transparent 50%, black 50%, transparent 50.5%),
+        linear-gradient(45deg, transparent 49.5%, black 50%, transparent 50.5%),
+        linear-gradient(-45deg, transparent 49.5%, black 50%, transparent 50.5%);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+      background-repeat: no-repeat;
+    }
+    #hanziInput {
+      width: 500px;
+      height: 50px;
+      font-size: 24px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    #drawBtn {
+      width: 150px;
+      height: 50px;
+      font-size: 24px;
+      cursor: pointer;
+      margin-left: 10px;
     }
   </style>
-  <!-- 引入 Hanzi Writer -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@2.1.2/dist/hanzi-writer.min.js"></script> -->
   <script src="https://unpkg.com/hanzi-writer@2.1.0/dist/hanzi-writer.min.js"></script>
 </head>
 <body>
-  <h1>汉字笔画动态田字格</h1>
-  <input type="text" id="hanziInput" value="王" maxlength="1">
-  <button onclick="renderCharacter()">绘制笔画</button>
+  <h1>多汉字逐个笔画动画米字格</h1>
+  <input type="text" id="hanziInput" value="王中和国民安乐家" maxlength="10" />
+  <button id="drawBtn" onclick="renderCharacters()">绘制笔画</button>
 
   <div id="gridContainer"></div>
 
   <script>
-    function renderCharacter() {
-      const char = document.getElementById('hanziInput').value.trim();
+    async function renderCharacters() {
+      const chars = document.getElementById('hanziInput').value.trim();
       const gridContainer = document.getElementById('gridContainer');
-      gridContainer.innerHTML = ''; // 清空原有内容
+      gridContainer.innerHTML = '';
 
-      // 创建 Hanzi Writer 实例
-      const writer = HanziWriter.create(gridContainer, char, {
-        width: 150,
-        height: 150,
-        padding: 5,
-        showOutline: true,
-        strokeAnimationSpeed: 1,
-        delayBetweenStrokes: 300,
-        strokeColor: '#777',
-      });
+      for (let i = 0; i < chars.length; i++) {
+        const char = chars[i];
+        const div = document.createElement('div');
+        div.className = 'tianzige';
+        gridContainer.appendChild(div);
 
-      // 开始动画
-      writer.animateCharacter();
+        const writer = HanziWriter.create(div, char, {
+          width: 150,
+          height: 150,
+          padding: 5,
+          showOutline: true,
+          strokeAnimationSpeed: 1,
+          delayBetweenStrokes: 300,
+          strokeColor: '#900',
+        });
+
+        await writer.animateCharacter();
+      }
     }
   </script>
 </body>
