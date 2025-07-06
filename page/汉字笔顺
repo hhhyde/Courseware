@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>汉字笔画动态田字格</title>
+  <style>
+    #gridContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .tianzige {
+      width: 150px;
+      height: 150px;
+      border: 2px solid #000;
+      position: relative;
+    }
+  </style>
+  <!-- 引入 Hanzi Writer -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@2.1.2/dist/hanzi-writer.min.js"></script> -->
+  <script src="https://unpkg.com/hanzi-writer@2.1.0/dist/hanzi-writer.min.js"></script>
+</head>
+<body>
+  <h1>汉字笔画动态田字格</h1>
+  <input type="text" id="hanziInput" value="王" maxlength="1">
+  <button onclick="renderCharacter()">绘制笔画</button>
+
+  <div id="gridContainer"></div>
+
+  <script>
+    function renderCharacter() {
+      const char = document.getElementById('hanziInput').value.trim();
+      const gridContainer = document.getElementById('gridContainer');
+      gridContainer.innerHTML = ''; // 清空原有内容
+
+      // 创建 Hanzi Writer 实例
+      const writer = HanziWriter.create(gridContainer, char, {
+        width: 150,
+        height: 150,
+        padding: 5,
+        showOutline: true,
+        strokeAnimationSpeed: 1,
+        delayBetweenStrokes: 300,
+        strokeColor: '#777',
+      });
+
+      // 开始动画
+      writer.animateCharacter();
+    }
+  </script>
+</body>
+</html>
