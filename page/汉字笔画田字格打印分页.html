@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>汉字笔画田字格打印分页</title>
+  <style>
+    body { font-family: "Microsoft YaHei", sans-serif; padding: 20px; }
+    .print-page { 
+      display: flex; 
+      justify-content: center; 
+      margin-bottom: 20px;
+      page-break-after: always; 
+      page-break-inside: avoid; 
+    }
+    .gridContainer {
+      display: grid;
+      grid-template-columns: repeat(10, auto);
+      grid-auto-rows: auto;
+      gap: 2pt;
+      background: #fff;
+    }
+    .cellWrapper { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      position: relative;
+    }
+    .tianzi {
+      width: 34pt;
+      height: 34pt;
+      border: 1pt solid #999;
+      position: relative;
+      box-sizing: border-box;
+    }
+    .tianzi-bg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0; /* 田字格背景在下层 */
+    }
+    .tianzi-content {
+      position: relative;
+      z-index: 1; /* 笔画在上层 */
+      width: 100%;
+      height: 100%;
+    }
+    input, button { font-size: 16px; padding: 6px 12px; margin: 10px 10px 10px 0; }
+    @media print {
+      input, button, h2 { display: none; }
+      body { margin: 0; padding: 0; }
+      .print-page { margin-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>汉字笔画田字格打印分页</h2>
+  <input type="text" id="charInput" maxlength="100" placeholder="最多输入100个汉字" />
+  <button onclick="renderAll()">渲染笔画</button>
+  <button onclick="window.print()">打印</button>
+
+  <div id="pagesContainer"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@2.1.0/dist/hanzi-writer.min.js"></script>
+
+  <script>
+    const pagesContainer = document.getElementById("pagesContainer");
+    let allGrids = [];
+
+    async function renderAll() {
+      const text = document.getElementById("charInput").value.trim();
+      if (!text) return alert("请输入汉字");
+      if (text.length > 100) return alert("最多支持100个汉字");
+
+      pagesContainer.innerHTML = "";
+      allGrids = [];
+
+      for (let charIndex = 0; charIndex < text.length; charIndex++) {
+        const ch = text[charIndex];
+        const charData = await HanziWriter.loadCharacterData(ch);
+        const strokes = charData.strokes;
+
+        for (let i = 0; i < 20; i++) {
+          const cell = document.createElement("div");
+          cell.className = "cellWrapper";
+
+          const grid = document.createElement("div");
+          grid.className = "tianzi";
+
+          // 背景田字格
+          const bg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          bg.setAttribute("class", "tianzi-bg");
+          bg.setAttribute("viewBox", "0 0 1024 1024");
+
+          const line1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line1.setAttribute("x1", "512"); line1.setAttribute("y1", "0");
+          line1.setAttribute("x2", "512"); line1.setAttribute("y2", "1024");
+          line1.setAttribute("stroke", "#ccc"); line1.setAttribute("stroke-width", "8");
+
+          const line2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line2.setAttribute("x1", "0"); line2.setAttribute("y1", "512");
+          line2.setAttribute("x2", "1024"); line2.setAttribute("y2", "512");
+          line2.setAttribute("stroke", "#ccc"); line2.setAttribute("stroke-width", "8");
+
+          bg.appendChild(line1);
+          bg.appendChild(line2);
+          grid.appendChild(bg);
+
+          // 笔画层
+          const content = document.createElement("div");
+          content.className = "tianzi-content";
+
+          if (i === 0) {
+            // 渲染完整汉字
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 1024 1024");
+            svg.style.width = "100%";
+            svg.style.height = "100%";
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            g.setAttribute("transform", "scale(1,-1) translate(0,-1024)");
+
+            for (let j = 0; j < strokes.length; j++) {
+              const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+              path.setAttribute("d", strokes[j]);
+              path.setAttribute("fill", "#900");
+              g.appendChild(path);
+            }
+
+            svg.appendChild(g);
+            content.appendChild(svg);
+          } else if (i <= strokes.length) {
+            // 分步笔画
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 1024 1024");
+            svg.style.width = "100%";
+            svg.style.height = "100%";
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            g.setAttribute("transform", "scale(1,-1) translate(0,-1024)");
+
+            for (let j = 0; j < i - 1; j++) {
+              const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+              path.setAttribute("d", strokes[j]);
+              path.setAttribute("fill", "#ccc");
+              g.appendChild(path);
+            }
+            if (i - 1 < strokes.length) {
+              const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+              path.setAttribute("d", strokes[i - 1]);
+              path.setAttribute("fill", "#900");
+              g.appendChild(path);
+            }
+
+            svg.appendChild(g);
+            content.appendChild(svg);
+          }
+
+          grid.appendChild(content);
+          cell.appendChild(grid);
+          allGrids.push(cell);
+        }
+      }
+
+      const pagesize = 200;
+      for (let i = 0; i < allGrids.length; i += pagesize) {
+        const page = document.createElement("div");
+        page.className = "print-page";
+        const container = document.createElement("div");
+        container.className = "gridContainer";
+        allGrids.slice(i, i + pagesize).forEach(c => container.appendChild(c));
+        page.appendChild(container);
+        pagesContainer.appendChild(page);
+      }
+    }
+  </script>
+
+</body>
+</html>
