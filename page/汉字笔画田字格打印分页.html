@@ -89,7 +89,7 @@
 <body>
 
   <h2>汉字笔画田字格打印分页</h2>
-  <input type="text" id="charInput" maxlength="100" value="热水器" placeholder="最多输入100个汉字" />
+  <input type="text" id="charInput" maxlength="1000" value="热水器" placeholder="最多输入1000个汉字" />
   <button onclick="renderAll()">渲染笔画</button>
   <button onclick="window.print()">打印</button>
 
@@ -105,7 +105,7 @@
     async function renderAll() {
       const text = document.getElementById("charInput").value.trim();
       if (!text) return alert("请输入汉字");
-      if (text.length > 100) return alert("最多支持100个汉字");
+      if (text.length > 1000) return alert("最多支持1000个汉字");
 
       pagesContainer.innerHTML = "";
       allGrids = [];
@@ -210,7 +210,7 @@
             if (i - 1 < strokes.length) {
               const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
               path.setAttribute("d", strokes[i - 1]);
-              path.setAttribute("fill", "#900");
+              path.setAttribute("fill", "#f5cfcf");
               g.appendChild(path);
             }
 
