@@ -66,6 +66,16 @@
       margin: 10px 10px 10px 0;
     }
 
+    .page-num {
+      text-align: right;
+      font-size: 14px;
+      color: #888;
+      margin-top: 8pt;
+      margin-bottom: 0;
+      width: 100%;
+      padding-right: 10pt;
+    }
+
     @media print {
 
       input,
@@ -81,6 +91,20 @@
 
       .print-page {
         margin-bottom: 0;
+        position: relative;
+      }
+
+      .page-num {
+        position: absolute;
+        bottom: 8pt;
+        right: 16pt;
+        left: 0;
+        text-align: right;
+        color: #888;
+        font-size: 14px;
+        width: 100%;
+        margin: 0;
+        padding: 0 16pt 0 0;
       }
     }
   </style>
@@ -142,7 +166,7 @@
           pinyinDiv.style.marginBottom = "1px";
           var { pinyin } = pinyinPro;
           pinyinDiv.textContent = pinyin(ch);
-          if (strokes.length < i) {
+          if (i>0) {
             pinyinDiv.textContent = "";
           }
 
@@ -271,7 +295,7 @@
           svg.style.width = "100%";
           svg.style.height = "100%";
           const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          g.setAttribute("transform", "scale(1,-1) translate(0,-924)");
+          g.setAttribute("transform", "scale(1,-1) translate(0,-920)");
           for (let k = 0; k < strokes.length; k++) {
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
             path.setAttribute("d", strokes[k]);
@@ -295,6 +319,13 @@
         container.className = "gridContainer";
         allGrids.slice(i, i + pagesize).forEach(c => container.appendChild(c));
         page.appendChild(container);
+
+        // 添加页码
+        const pageNum = document.createElement("div");
+        pageNum.className = "page-num";
+        pageNum.textContent = `第 ${Math.floor(i / pagesize) + 1} 页`;
+        page.appendChild(pageNum);
+
         pagesContainer.appendChild(page);
       }
     }
