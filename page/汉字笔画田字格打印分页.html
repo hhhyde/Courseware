@@ -121,6 +121,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@2.1.0/dist/hanzi-writer.min.js"></script>
   <script src="https://unpkg.com/pinyin-pro"></script>
+  <script src="https://unpkg.com/cnchar/cnchar.min.js"></script>
+  <script src="https://unpkg.com/cnchar-radical/cnchar.radical.min.js"></script>
+  <script src="https://unpkg.com/cnchar-words/cnchar.words.min.js"></script>
+
 
   <script>
     const pagesContainer = document.getElementById("pagesContainer");
@@ -169,6 +173,45 @@
           if (i>0) {
             pinyinDiv.textContent = "";
           }
+
+          if (i==1) {
+            // 笔画数
+            pinyinDiv.style.fontSize = "8px";
+            pinyinDiv.textContent = strokes.length+'画';
+          }
+
+          if (i==2) {
+            // 结构
+            pinyinDiv.style.fontSize = "8px";
+            var radical = cnchar.radical(ch);
+            pinyinDiv.textContent = radical[0].struct;
+          }
+
+          if (i==3) {
+            // 查询部首
+            pinyinDiv.style.fontSize = "8px";
+            var radical = cnchar.radical(ch);
+            pinyinDiv.textContent = radical[0].radical+'部';
+          }
+
+          if (i==4 || i==5) {
+            // 组词
+            pinyinDiv.style.fontSize = "8px";
+            var words = cnchar.words(ch);
+            console.log(words);
+            pinyinDiv.textContent = words.filter(item => item.length === 2)[i-4];
+          }
+
+          // if (i==4) {
+          //   // 组词
+          //   pinyinDiv.style.fontSize = "8px";
+          //   var words = cnchar.words(ch);
+          //   console.log(words);
+          //   pinyinDiv.textContent = words.filter(item => item.length === 2)[0];
+          // }
+
+      
+
 
           cell.appendChild(pinyinDiv);
 
