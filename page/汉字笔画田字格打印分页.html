@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
   <meta charset="UTF-8" />
   <title>汉字笔画田字格打印分页</title>
   <style>
-    body { font-family: "Microsoft YaHei", sans-serif; padding: 20px; }
-    .print-page { 
-      display: flex; 
-      justify-content: center; 
-      margin-bottom: 20px;
-      page-break-after: always; 
-      page-break-inside: avoid; 
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      padding: 20px;
     }
+
+    .print-page {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      page-break-after: always;
+      page-break-inside: avoid;
+    }
+
     .gridContainer {
       display: grid;
       grid-template-columns: repeat(10, auto);
@@ -19,12 +25,14 @@
       gap: 2pt;
       background: #fff;
     }
-    .cellWrapper { 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
+
+    .cellWrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       position: relative;
     }
+
     .tianzi {
       width: 34pt;
       height: 34pt;
@@ -32,37 +40,63 @@
       position: relative;
       box-sizing: border-box;
     }
+
     .tianzi-bg {
       position: absolute;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      z-index: 0; /* 田字格背景在下层 */
+      z-index: 0;
+      /* 田字格背景在下层 */
     }
+
     .tianzi-content {
       position: relative;
-      z-index: 1; /* 笔画在上层 */
+      z-index: 1;
+      /* 笔画在上层 */
       width: 100%;
       height: 100%;
     }
-    input, button { font-size: 16px; padding: 6px 12px; margin: 10px 10px 10px 0; }
+
+    input,
+    button {
+      font-size: 16px;
+      padding: 6px 12px;
+      margin: 10px 10px 10px 0;
+    }
+
     @media print {
-      input, button, h2 { display: none; }
-      body { margin: 0; padding: 0; }
-      .print-page { margin-bottom: 0; }
+
+      input,
+      button,
+      h2 {
+        display: none;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .print-page {
+        margin-bottom: 0;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <h2>汉字笔画田字格打印分页</h2>
-  <input type="text" id="charInput" maxlength="100" placeholder="最多输入100个汉字" />
+  <input type="text" id="charInput" maxlength="100" value="热水器" placeholder="最多输入100个汉字" />
   <button onclick="renderAll()">渲染笔画</button>
   <button onclick="window.print()">打印</button>
 
   <div id="pagesContainer"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@2.1.0/dist/hanzi-writer.min.js"></script>
+  <script src="https://unpkg.com/pinyin-pro"></script>
 
   <script>
     const pagesContainer = document.getElementById("pagesContainer");
@@ -81,9 +115,38 @@
         const charData = await HanziWriter.loadCharacterData(ch);
         const strokes = charData.strokes;
 
-        for (let i = 0; i < 20; i++) {
+        // HanziWriter 字形定位参数
+        const { top, bottom, left, right } = charData;
+        const charHeight = bottom - top;
+        const charWidth = right - left;
+        const gridSize = 1024;
+        // 缩放比例（留一点边距，防止贴边）
+        const scale = 0.85 * gridSize / Math.max(charHeight, charWidth);
+        // 居中平移
+        const dx = (gridSize - charWidth * scale) / 2 - left * scale;
+        const dy = (gridSize - charHeight * scale) / 2 - top * scale;
+
+        // 生成20个田字格
+        console.log(`正在渲染汉字：${ch} (${Math.ceil((strokes.length + 1) / 10) * 10})`);
+        for (let i = 0; i < Math.ceil((strokes.length + 1) / 10) * 10; i++) {
           const cell = document.createElement("div");
           cell.className = "cellWrapper";
+
+          // 拼音行
+          const pinyinDiv = document.createElement("div");
+          pinyinDiv.style.height = "16px";
+          pinyinDiv.style.lineHeight = "16px";
+          pinyinDiv.style.fontSize = "13px";
+          pinyinDiv.style.textAlign = "center";
+          pinyinDiv.style.width = "34pt";
+          pinyinDiv.style.marginBottom = "1px";
+          var { pinyin } = pinyinPro;
+          pinyinDiv.textContent = pinyin(ch);
+          if (strokes.length < i) {
+            pinyinDiv.textContent = "";
+          }
+
+          cell.appendChild(pinyinDiv);
 
           const grid = document.createElement("div");
           grid.className = "tianzi";
@@ -110,7 +173,7 @@
           // 笔画层
           const content = document.createElement("div");
           content.className = "tianzi-content";
-
+          content.style.transform = "translateY(-9%)";
           if (i === 0) {
             // 渲染完整汉字
             const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -159,9 +222,72 @@
           cell.appendChild(grid);
           allGrids.push(cell);
         }
+
+        // 只有当笔画数大于等于10时，才补一整行空白田字格
+
+        for (let j = 0; j < 10; j++) {
+          // 如果没有笔画则不展示该田字格
+          if (!strokes || strokes.length === 0) continue;
+
+          const cell = document.createElement("div");
+          cell.className = "cellWrapper";
+          // 拼音空白行
+          const pinyinDiv = document.createElement("div");
+          pinyinDiv.style.height = "16px";
+          pinyinDiv.style.lineHeight = "16px";
+          pinyinDiv.style.fontSize = "13px";
+          pinyinDiv.style.textAlign = "center";
+          pinyinDiv.style.width = "34pt";
+          pinyinDiv.style.marginBottom = "1px";
+          pinyinDiv.textContent = "";
+          cell.appendChild(pinyinDiv);
+
+          // 空白田字格（含背景）
+          const grid = document.createElement("div");
+          grid.className = "tianzi";
+
+          // 田字格背景
+          const bg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          bg.setAttribute("class", "tianzi-bg");
+          bg.setAttribute("viewBox", "0 0 1024 1024");
+
+          const line1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line1.setAttribute("x1", "512"); line1.setAttribute("y1", "0");
+          line1.setAttribute("x2", "512"); line1.setAttribute("y2", "1024");
+          line1.setAttribute("stroke", "#ccc"); line1.setAttribute("stroke-width", "8");
+
+          const line2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line2.setAttribute("x1", "0"); line2.setAttribute("y1", "512");
+          line2.setAttribute("x2", "1024"); line2.setAttribute("y2", "512");
+          line2.setAttribute("stroke", "#ccc"); line2.setAttribute("stroke-width", "8");
+
+          bg.appendChild(line1);
+          bg.appendChild(line2);
+          grid.appendChild(bg);
+
+          // 整体汉字字形背景（用浅色填充）
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("viewBox", "0 0 1024 1024");
+          svg.style.width = "100%";
+          svg.style.height = "100%";
+          const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          g.setAttribute("transform", "scale(1,-1) translate(0,-924)");
+          for (let k = 0; k < strokes.length; k++) {
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", strokes[k]);
+            path.setAttribute("fill", "#f5cfcf"); // 浅色背景
+            g.appendChild(path);
+          }
+          svg.appendChild(g);
+          grid.appendChild(svg);
+
+          cell.appendChild(grid);
+          allGrids.push(cell);
+        }
+
       }
 
-      const pagesize = 200;
+      const pagesize = 150;
       for (let i = 0; i < allGrids.length; i += pagesize) {
         const page = document.createElement("div");
         page.className = "print-page";
@@ -175,4 +301,5 @@
   </script>
 
 </body>
+
 </html>
